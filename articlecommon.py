@@ -8,6 +8,7 @@ import time
 
 from sklearn.feature_selection import mutual_info_classif
 from sklearn.preprocessing import LabelEncoder
+from sklearn.pipeline import make_pipeline
 from category_encoders import TargetEncoder
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import confusion_matrix
