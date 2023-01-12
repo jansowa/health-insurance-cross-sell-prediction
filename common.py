@@ -10,7 +10,7 @@ from sklearn.feature_selection import mutual_info_classif
 from sklearn.preprocessing import LabelEncoder
 from sklearn.pipeline import make_pipeline
 from category_encoders import TargetEncoder
-from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import cross_val_score, train_test_split
 from sklearn.metrics import confusion_matrix
 from sklearn import tree
 from sklearn.inspection import PartialDependenceDisplay
@@ -33,10 +33,8 @@ from pdpbox import pdp, get_dataset, info_plots
 warnings.filterwarnings("ignore")
 
 df = pd.read_csv("train.csv")
-X = df.iloc[:,1:-1]
-y = df.iloc[:,-1]
-
-# variables from data_analysis.ipynb
+X = df.iloc[:, 1:-1]
+y = df.iloc[:, -1]
 
 le = LabelEncoder()
 X_le = X.copy()
@@ -44,21 +42,6 @@ X_le["Gender"] = le.fit_transform(X["Gender"])
 X_le["Vehicle_Age"] = le.fit_transform(X["Vehicle_Age"])
 X_le["Vehicle_Damage"] = le.fit_transform(X["Vehicle_Damage"])
 df_le = pd.concat([X_le, y], axis=1)
-
-# common ML methods
-def print_confusion_matrix(y_true, classifier, X_test):
-    y_pred = classifier.predict(X_test)
-    confmat = confusion_matrix(y_true=y_true, y_pred=y_pred)
-    fig, ax = plt.subplots(figsize=(5,5))
-    ax.matshow(confmat, cmap=plt.cm.Blues, alpha=0.3)
-    for i in range(confmat.shape[0]):
-        for j in range(confmat.shape[1]):
-            ax.text(x=j, y=i,
-                   s=confmat[i,j],
-                   va='center', ha='center')
-    plt.xlabel('Predicted class')
-    plt.ylabel('Real class')
-    plt.show()
 
 def cross_val_summary(classifier, X, y, cv=10, scoring='roc_auc', message=None):
     start_time = time.time()
