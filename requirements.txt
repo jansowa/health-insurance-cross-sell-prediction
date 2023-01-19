@@ -1,0 +1,12 @@
+pandas~=1.5.2
+matplotlib~=3.6.3
+numpy~=1.24.1
+xgboost~=1.7.1
+seaborn~=0.12.2
+optuna~=2.10.1
+graphviz~=7.0.6
+eli5~=0.13.0
+scikit-learn~=1.2.0
+category_encoders~=2.6.0
+lightgbm~=3.3.4
+pdpbox~=0.2.1
