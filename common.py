@@ -1,8 +1,10 @@
 import warnings
+
 warnings.filterwarnings("ignore")
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+
 np.seterr(all="ignore")
 import time
 
@@ -30,6 +32,8 @@ import graphviz
 import eli5
 from eli5.sklearn import PermutationImportance
 from pdpbox import pdp, get_dataset, info_plots
+from numpy.typing import *
+
 warnings.filterwarnings("ignore")
 
 df = pd.read_csv("train.csv")
@@ -43,11 +47,18 @@ X_le["Vehicle_Age"] = le.fit_transform(X["Vehicle_Age"])
 X_le["Vehicle_Damage"] = le.fit_transform(X["Vehicle_Damage"])
 df_le = pd.concat([X_le, y], axis=1)
 
-def cross_val_summary(classifier, X, y, cv=10, scoring='roc_auc', message=None):
+
+def cross_val_summary(classifier, X: ArrayLike, y: ArrayLike, cv: int = 10, scoring='roc_auc',
+                      message: str = None) -> float:
     start_time = time.time()
     score = cross_val_score(classifier, X, y, cv=cv, scoring=scoring).mean()
     print("Cross validation time: %s seconds" % (time.time() - start_time))
     if message is None:
-      print("Mean score:", score)
+        print("Mean score:", score)
     else:
-      print(message + str(score))
+        print(message + str(score))
+    return score
+
+
+def underscore_to_newline(text: str) -> str:
+    return text.replace("_", "\n")
