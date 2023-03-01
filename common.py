@@ -12,8 +12,8 @@ from sklearn.feature_selection import mutual_info_classif
 from sklearn.preprocessing import LabelEncoder
 from sklearn.pipeline import make_pipeline
 from category_encoders import TargetEncoder
-from sklearn.model_selection import cross_val_score, train_test_split
-from sklearn.metrics import confusion_matrix
+from sklearn.model_selection import cross_val_score, train_test_split, StratifiedKFold
+from sklearn.metrics import confusion_matrix, roc_curve, auc
 from sklearn import tree
 from sklearn.inspection import PartialDependenceDisplay
 from sklearn.preprocessing import StandardScaler, PowerTransformer, QuantileTransformer
@@ -225,3 +225,47 @@ def choose_columns_to_drop(classifier, X, columns_for_transformer) -> None:
         print(str(len(columns_to_drop)) + " columns was removed")
         print()
 
+def cross_val_roc_curve(classifier, X, y, cv=10, figsize=[6,6]):
+    kfold = StratifiedKFold(n_splits=cv, shuffle=False)
+    fig1 = plt.figure(figsize=figsize)
+
+    tprs = []
+    aucs = []
+    mean_fpr = np.linspace(0, 1, 100)
+    i = 1
+    fitting_time = 0
+    predicting_time = 0
+    for train,test in kfold.split(X, y):
+        start_time = time.time()
+        try:
+            classifier.fit(X.iloc[train], y.iloc[train])
+        except:
+            classifier.fit(X.iloc[train].values, y.iloc[train].values)
+        fitting_time += (time.time() - start_time)
+        prob = None
+        start_time = time.time()
+        try:
+            prob = classifier.decision_function(X.iloc[test])
+        except:
+            prob = classifier.predict_proba(X.iloc[test])[:, 1]
+        predicting_time += (time.time() - start_time)
+        fpr, tpr, t = roc_curve(y.iloc[test], prob)
+        tprs.append(np.interp(mean_fpr, fpr, tpr))
+        roc_auc = auc(fpr, tpr)
+        aucs.append(roc_auc)
+        plt.plot(fpr, tpr, lw=2, alpha=0.3, label='ROC fold %d (AUC = %0.4f)' % (i, roc_auc))
+        i = i+1
+
+    plt.plot([0, 1], [0, 1], linestyle='--', lw=2, color='black')
+    mean_tpr = np.mean(tprs, axis=0)
+    mean_auc = auc(mean_fpr, mean_tpr)
+    plt.plot(mean_fpr, mean_tpr, color='blue',
+             label=r'Mean ROC (AUC = %0.4f )' % (mean_auc), lw=2, alpha=1)
+
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('ROC')
+    plt.legend(loc="lower right")
+    print("Mean fitting time:", fitting_time/cv)
+    print("Mean predicting time:", predicting_time/cv)
+    plt.show()
